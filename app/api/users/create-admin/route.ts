@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { createClient } from '@/lib/supabase-client'
+import { createServerClient } from '@/lib/supabase-server'
 
 // Endpoint per creare l'utente admin iniziale
 // Chiama: POST /api/users/create-admin
@@ -11,7 +11,7 @@ export async function POST() {
     const name = 'Administrator'
 
     // Crea l'utente in Supabase Auth
-    const supabase = createClient()
+    const supabase = await createServerClient()
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
