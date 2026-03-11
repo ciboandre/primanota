@@ -143,6 +143,30 @@ progetto/
 - API RESTful per tutte le operazioni
 - Popolamento iniziale con dati di esempio
 
+## Deploy su Vercel
+
+### Configurazione Variabili d'Ambiente
+
+Per deployare l'applicazione su Vercel, devi configurare la variabile d'ambiente `DATABASE_URL`:
+
+1. Vai su [Vercel Dashboard](https://vercel.com/dashboard)
+2. Seleziona il progetto
+3. Vai su **Settings** → **Environment Variables**
+4. Aggiungi:
+   - **Name**: `DATABASE_URL`
+   - **Value**: `postgresql://postgres.exmpgaocttxqzpvpxsgy:%21Buui849200@aws-1-eu-north-1.pooler.supabase.com:5432/postgres`
+   - **Environments**: Production, Preview, Development
+
+5. Fai un **Redeploy** dell'applicazione
+
+📖 Per istruzioni dettagliate, vedi [VERCEL_SETUP.md](VERCEL_SETUP.md)
+
+### Note Importanti
+
+- La password nella connection string è già URL-encoded (`%21` = `!`)
+- Usa sempre il Session Pooler per Supabase su Vercel
+- Non committare mai la connection string nel codice
+
 ## Licenza
 
 © 2023 Prima Nota Accounting. Tutti i diritti riservati.
