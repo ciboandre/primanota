@@ -221,16 +221,19 @@ export default function MovimentiPage() {
         window.URL.revokeObjectURL(url)
         document.body.removeChild(a)
       } else {
+        // PDF: scarica direttamente il file HTML (può essere salvato come PDF)
         const data = await res.json()
         if (data.success) {
-          const printWindow = window.open('', '_blank')
-          if (printWindow) {
-            printWindow.document.write(data.html)
-            printWindow.document.close()
-            printWindow.onload = () => {
-              printWindow.print()
-            }
-          }
+          // Crea un blob con l'HTML
+          const htmlBlob = new Blob([data.html], { type: 'text/html;charset=utf-8' })
+          const url = window.URL.createObjectURL(htmlBlob)
+          const a = document.createElement('a')
+          a.href = url
+          a.download = `movimenti_${new Date().toISOString().split('T')[0]}.html`
+          document.body.appendChild(a)
+          a.click()
+          window.URL.revokeObjectURL(url)
+          document.body.removeChild(a)
         } else {
           alert('Errore nella generazione del PDF')
         }
