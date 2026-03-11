@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Layout from '@/components/Layout'
 import MetricCard from '@/components/MetricCard'
 import ProgressBar from '@/components/ProgressBar'
@@ -31,12 +31,7 @@ export default function ContoEconomicoPage() {
   })
   const [monthlyData, setMonthlyData] = useState<Array<{ month: string; revenue: number; costs: number; profit: number }>>([])
 
-  useEffect(() => {
-    fetchStats()
-    fetchMonthlyData()
-  }, [period])
-
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
       setLoading(true)
       // Calcola le date in base al periodo
@@ -62,9 +57,9 @@ export default function ContoEconomicoPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [period])
 
-  const fetchMonthlyData = async () => {
+  const fetchMonthlyData = useCallback(async () => {
     try {
       // Recupera i dati degli ultimi 6 mesi
       const now = new Date()
@@ -92,7 +87,12 @@ export default function ContoEconomicoPage() {
     } catch (error) {
       console.error('Error fetching monthly data:', error)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    fetchStats()
+    fetchMonthlyData()
+  }, [period, fetchStats, fetchMonthlyData])
 
   const { totalRevenue, totalCosts, netProfit, profitMargin, revenueDetails, costDetails } = stats
   const revenueChange = 12.5 // TODO: Calcolare dal database
