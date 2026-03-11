@@ -30,6 +30,17 @@ model Account {
   transactions Transaction[]
 }
 
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  name          String?
+  role          String   @default("user") // "admin" o "user"
+  supabaseId    String?  @unique // ID utente da Supabase Auth
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  transactions  Transaction[]
+}
+
 model Transaction {
   id          String   @id @default(uuid())
   date        DateTime @default(now())
@@ -42,10 +53,13 @@ model Transaction {
   category    Category @relation(fields: [categoryId], references: [id])
   accountId   String
   account     Account  @relation(fields: [accountId], references: [id])
+  userId      String?  // Opzionale: per associare transazioni a utenti
+  user        User?    @relation(fields: [userId], references: [id])
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@index([date])
   @@index([categoryId])
   @@index([accountId])
+  @@index([userId])
 }
