@@ -255,16 +255,17 @@ export default function MovimentiPage() {
 
   return (
     <Layout>
-      <div className="space-y-8">
+      <div className="space-y-4 sm:space-y-8 pb-20 sm:pb-0">
         {/* Header */}
-        <div className="flex justify-between items-start">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Movimenti</h1>
-            <p className="text-gray-600 mt-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Movimenti</h1>
+            <p className="text-sm sm:text-base text-gray-600 mt-1 sm:mt-2">
               Gestione e monitoraggio delle transazioni finanziarie in tempo reale
             </p>
           </div>
-          <div className="flex space-x-3">
+          {/* Desktop Actions */}
+          <div className="hidden md:flex space-x-3">
             <button
               onClick={() => handleExport('csv')}
               className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center space-x-2"
@@ -292,6 +293,23 @@ export default function MovimentiPage() {
             >
               <Plus className="w-4 h-4" />
               <span>Nuovo Movimento</span>
+            </button>
+          </div>
+          {/* Mobile Actions - Compact */}
+          <div className="flex md:hidden space-x-2">
+            <button
+              onClick={() => handleExport('csv')}
+              className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+              title="Esporta CSV"
+            >
+              <FileSpreadsheet className="w-5 h-5" />
+            </button>
+            <button
+              onClick={() => handleExport('pdf')}
+              className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+              title="Esporta PDF"
+            >
+              <FileText className="w-5 h-5" />
             </button>
           </div>
         </div>
@@ -326,35 +344,40 @@ export default function MovimentiPage() {
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-lg shadow-md p-4">
-          <div className="flex flex-wrap items-center gap-4">
-            <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center space-x-2">
-              <Calendar className="w-4 h-4" />
-              <span>Questa settimana</span>
+        <div className="bg-white rounded-lg shadow-md p-3 sm:p-4">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+            <button className="px-2 sm:px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm">
+              <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">Questa settimana</span>
+              <span className="sm:hidden">Settimana</span>
             </button>
-            <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center space-x-2">
-              <MoreVertical className="w-4 h-4" />
-              <span>Tutte le Categorie</span>
+            <button className="px-2 sm:px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm">
+              <MoreVertical className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">Tutte le Categorie</span>
+              <span className="sm:hidden">Categorie</span>
             </button>
-            <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center space-x-2">
-              <Building2 className="w-4 h-4" />
-              <span>Tutti i Conti</span>
+            <button className="px-2 sm:px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm">
+              <Building2 className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">Tutti i Conti</span>
+              <span className="sm:hidden">Conti</span>
             </button>
             <div className="ml-auto">
               <button
                 onClick={() => setIsFiltersOpen(true)}
-                className="text-primary hover:text-primary-dark flex items-center space-x-2"
+                className="text-primary hover:text-primary-dark flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm"
               >
-                <Filter className="w-4 h-4" />
-                <span>Filtri Avanzati</span>
+                <Filter className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Filtri Avanzati</span>
+                <span className="sm:hidden">Filtri</span>
               </button>
             </div>
           </div>
         </div>
 
-        {/* Transactions Table */}
+        {/* Transactions - Desktop Table / Mobile Cards */}
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <div className="overflow-x-auto">
+          {/* Desktop Table */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
@@ -388,7 +411,7 @@ export default function MovimentiPage() {
                       Caricamento...
                     </td>
                   </tr>
-                ) : transactions.length === 0 ? (
+                ) : paginatedTransactions.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
                       Nessun movimento trovato. Crea il primo movimento!
@@ -463,6 +486,88 @@ export default function MovimentiPage() {
                 )}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="md:hidden divide-y divide-gray-200">
+            {loading ? (
+              <div className="px-4 py-8 text-center text-gray-500">
+                Caricamento...
+              </div>
+            ) : paginatedTransactions.length === 0 ? (
+              <div className="px-4 py-8 text-center text-gray-500">
+                Nessun movimento trovato. Crea il primo movimento!
+              </div>
+            ) : (
+              paginatedTransactions.map((transaction) => (
+                <div key={transaction.id} className="p-4 hover:bg-gray-50">
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-1">
+                        <h3 className="text-sm font-medium text-gray-900">
+                          {transaction.description}
+                        </h3>
+                        <span
+                          className={`text-sm font-semibold ${
+                            transaction.amount > 0 ? 'text-green-600' : 'text-red-600'
+                          }`}
+                        >
+                          {transaction.amount > 0 ? '+' : ''}€{' '}
+                          {Math.abs(transaction.amount).toLocaleString('it-IT', {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
+                        </span>
+                      </div>
+                      {transaction.details && (
+                        <p className="text-xs text-gray-500 mb-2">{transaction.details}</p>
+                      )}
+                      <div className="flex flex-wrap items-center gap-2 text-xs text-gray-600">
+                        <span>
+                          {format(new Date(transaction.date), 'dd MMM yyyy', { locale: it })}
+                        </span>
+                        <span>•</span>
+                        <span
+                          className={`px-2 py-0.5 rounded-full ${
+                            categoryColors[transaction.category.name] || 'bg-gray-100 text-gray-700'
+                          }`}
+                        >
+                          {transaction.category.name}
+                        </span>
+                        <span>•</span>
+                        <span>{transaction.account.name}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between mt-3">
+                    <div className="flex items-center">
+                      <span
+                        className={`w-2 h-2 rounded-full mr-2 ${
+                          statusColors[transaction.status] || 'bg-gray-500'
+                        }`}
+                      ></span>
+                      <span className="text-xs text-gray-600">{transaction.status}</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <button
+                        onClick={() => handleEditTransaction(transaction)}
+                        className="text-primary hover:text-primary-dark p-2"
+                        title="Modifica"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteTransaction(transaction.id)}
+                        className="text-red-600 hover:text-red-800 p-2"
+                        title="Elimina"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
           {totalPages <= 1 ? (
             <div className="bg-gray-50 px-6 py-4">
@@ -550,6 +655,19 @@ export default function MovimentiPage() {
         onClose={() => setIsFiltersOpen(false)}
         onApply={setAppliedFilters}
       />
+
+      {/* Mobile Floating Action Button */}
+      <button
+        onClick={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          handleNewTransaction()
+        }}
+        className="fixed bottom-6 right-6 md:hidden w-14 h-14 bg-primary text-white rounded-full shadow-lg hover:bg-primary-dark flex items-center justify-center z-50"
+        aria-label="Nuovo Movimento"
+      >
+        <Plus className="w-6 h-6" />
+      </button>
     </Layout>
   )
 }
