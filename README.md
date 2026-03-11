@@ -55,7 +55,24 @@ npm run dev
 
 ## Database
 
-L'applicazione utilizza **SQLite** per lo sviluppo locale. Il database si trova in `prisma/dev.db`.
+L'applicazione utilizza **PostgreSQL** come database.
+
+### Configurazione Database
+
+1. Crea un database PostgreSQL:
+```bash
+createdb primanota
+```
+
+2. Configura la variabile d'ambiente nel file `.env`:
+```
+DATABASE_URL="postgresql://user:password@localhost:5432/primanota?schema=public"
+```
+
+3. Esegui le migrazioni:
+```bash
+npx prisma migrate dev --name init
+```
 
 ### Struttura Database
 
@@ -68,18 +85,7 @@ L'applicazione utilizza **SQLite** per lo sviluppo locale. Il database si trova 
 - `npm run prisma:generate` - Genera il client Prisma
 - `npm run prisma:migrate` - Crea una nuova migrazione
 - `npm run prisma:studio` - Apre Prisma Studio per visualizzare/modificare i dati
-
-### Migrazione a PostgreSQL
-
-Per usare PostgreSQL in produzione, modifica il file `.env`:
-```
-DATABASE_URL="postgresql://user:password@localhost:5432/primanota?schema=public"
-```
-
-Poi esegui:
-```bash
-npx prisma migrate deploy
-```
+- `npx prisma migrate deploy` - Applica le migrazioni in produzione
 
 ## Struttura del Progetto
 

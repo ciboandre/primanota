@@ -32,6 +32,8 @@ yarn-error.log*
 *.db
 *.db-journal
 prisma/dev.db*
+# PostgreSQL (se usi un dump locale)
+*.sql
 
 # vercel
 .vercel

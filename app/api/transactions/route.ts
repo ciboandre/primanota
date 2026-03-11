@@ -21,9 +21,17 @@ export async function GET(request: NextRequest) {
     if (categoryId) where.categoryId = categoryId
     if (accountId) where.accountId = accountId
 
-    // Aggiungi ricerca per descrizione e dettagli
-    // SQLite non supporta mode: 'insensitive', quindi facciamo il filtering lato client
-    let transactions = await prisma.transaction.findMany({
+    // Aggiungi ricerca per descrizione e dettagli (PostgreSQL supporta case-insensitive)
+    if (search) {
+      where.OR = [
+        { description: { contains: search, mode: 'insensitive' } },
+        { details: { contains: search, mode: 'insensitive' } },
+        { category: { name: { contains: search, mode: 'insensitive' } } },
+        { account: { name: { contains: search, mode: 'insensitive' } } },
+      ]
+    }
+
+    const transactions = await prisma.transaction.findMany({
       where,
       include: {
         category: true,
@@ -33,18 +41,6 @@ export async function GET(request: NextRequest) {
         date: 'desc',
       },
     })
-
-    // Applica il filtro di ricerca se presente (case-insensitive)
-    if (search) {
-      const searchLower = search.toLowerCase()
-      transactions = transactions.filter(
-        (t) =>
-          t.description.toLowerCase().includes(searchLower) ||
-          (t.details && t.details.toLowerCase().includes(searchLower)) ||
-          t.category.name.toLowerCase().includes(searchLower) ||
-          t.account.name.toLowerCase().includes(searchLower)
-      )
-    }
 
     return NextResponse.json(transactions)
 
