@@ -51,6 +51,8 @@ export default function MovimentiPage() {
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | undefined>()
   const [appliedFilters, setAppliedFilters] = useState<any>({})
   const [searchQuery, setSearchQuery] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
 
   useEffect(() => {
     // Recupera la query di ricerca da sessionStorage
@@ -127,6 +129,26 @@ export default function MovimentiPage() {
   useEffect(() => {
     fetchTransactions()
   }, [fetchTransactions])
+
+  // Reset alla prima pagina quando cambiano i filtri o le transazioni
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [appliedFilters, searchQuery])
+
+  // Calcola paginazione
+  const totalPages = Math.ceil(transactions.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const paginatedTransactions = transactions.slice(startIndex, endIndex)
+  const startItem = transactions.length > 0 ? startIndex + 1 : 0
+  const endItem = Math.min(endIndex, transactions.length)
+
+  // Reset alla prima pagina se la pagina corrente non esiste più
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(1)
+    }
+  }, [currentPage, totalPages])
 
   const handleNewTransaction = () => {
     setSelectedTransaction(undefined)
@@ -355,7 +377,7 @@ export default function MovimentiPage() {
                     </td>
                   </tr>
                 ) : (
-                  transactions.map((transaction) => (
+                  paginatedTransactions.map((transaction) => (
                     <tr key={transaction.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {format(new Date(transaction.date), 'dd MMM yyyy', { locale: it })}
@@ -424,26 +446,77 @@ export default function MovimentiPage() {
               </tbody>
             </table>
           </div>
-          <div className="bg-gray-50 px-6 py-4 flex items-center justify-between">
-            <p className="text-sm text-gray-700">
-              Mostrando 1 a {transactions.length} di {transactions.length} movimenti
-            </p>
-            <div className="flex space-x-2">
-              <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 text-sm">
-                Precedente
-              </button>
-              <button className="px-3 py-1 bg-primary text-white rounded text-sm">1</button>
-              <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 text-sm">
-                2
-              </button>
-              <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 text-sm">
-                3
-              </button>
-              <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 text-sm">
-                Successivo
-              </button>
+          {totalPages <= 1 ? (
+            <div className="bg-gray-50 px-6 py-4">
+              <p className="text-sm text-gray-700">
+                Mostrando {startItem} a {endItem} di {transactions.length} movimenti
+              </p>
             </div>
-          </div>
+          ) : (
+            <div className="bg-gray-50 px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <p className="text-sm text-gray-700">
+                Mostrando {startItem} a {endItem} di {transactions.length} movimenti
+              </p>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className={`px-3 py-1 border border-gray-300 rounded text-sm ${
+                    currentPage === 1
+                      ? 'opacity-50 cursor-not-allowed'
+                      : 'hover:bg-gray-100'
+                  }`}
+                >
+                  Precedente
+                </button>
+                
+                {/* Page Numbers */}
+                <div className="flex space-x-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                    // Mostra sempre la prima pagina, l'ultima, la pagina corrente e quelle adiacenti
+                    if (
+                      page === 1 ||
+                      page === totalPages ||
+                      (page >= currentPage - 1 && page <= currentPage + 1)
+                    ) {
+                      return (
+                        <button
+                          key={page}
+                          onClick={() => setCurrentPage(page)}
+                          className={`px-3 py-1 rounded text-sm ${
+                            currentPage === page
+                              ? 'bg-primary text-white'
+                              : 'border border-gray-300 hover:bg-gray-100'
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      )
+                    } else if (page === currentPage - 2 || page === currentPage + 2) {
+                      return (
+                        <span key={page} className="px-2 text-gray-500">
+                          ...
+                        </span>
+                      )
+                    }
+                    return null
+                  })}
+                </div>
+
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                  className={`px-3 py-1 border border-gray-300 rounded text-sm ${
+                    currentPage === totalPages
+                      ? 'opacity-50 cursor-not-allowed'
+                      : 'hover:bg-gray-100'
+                  }`}
+                >
+                  Successivo
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
