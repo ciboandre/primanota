@@ -38,6 +38,7 @@ prisma/dev.db*
 
 # supabase
 .supabase
+supabase/.temp/
 
 # typescript
 *.tsbuildinfo
