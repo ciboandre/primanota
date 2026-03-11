@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import Layout from '@/components/Layout'
 import MetricCard from '@/components/MetricCard'
 import TransactionForm from '@/components/TransactionForm'
@@ -75,7 +75,11 @@ export default function MovimentiPage() {
     }
   }, [])
 
-  const fetchTransactions = useCallback(async () => {
+  useEffect(() => {
+    fetchTransactions()
+  }, [appliedFilters, searchQuery])
+
+  const fetchTransactions = async () => {
     try {
       setLoading(true)
       const params = new URLSearchParams()
@@ -116,11 +120,7 @@ export default function MovimentiPage() {
     } finally {
       setLoading(false)
     }
-  }, [appliedFilters, searchQuery])
-
-  useEffect(() => {
-    fetchTransactions()
-  }, [fetchTransactions])
+  }
 
   const handleNewTransaction = () => {
     setSelectedTransaction(undefined)
