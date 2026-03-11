@@ -3,7 +3,8 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
-import { Search, Bell, User, Menu, X } from 'lucide-react'
+import { Search, Bell, User, Menu, X, LogOut } from 'lucide-react'
+import { createClient } from '@/lib/supabase-client'
 
 interface LayoutProps {
   children: React.ReactNode
@@ -14,6 +15,18 @@ export default function Layout({ children }: LayoutProps) {
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState('')
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
+
+  const handleLogout = async () => {
+    try {
+      const supabase = createClient()
+      await supabase.auth.signOut()
+      router.push('/auth/login')
+      router.refresh()
+    } catch (error) {
+      console.error('Error logging out:', error)
+    }
+  }
 
   // Chiudi il menu mobile quando cambia la route
   useEffect(() => {
@@ -23,21 +36,24 @@ export default function Layout({ children }: LayoutProps) {
   // Chiudi il menu quando si clicca fuori (opzionale)
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (mobileMenuOpen && typeof window !== 'undefined') {
+      if (typeof window !== 'undefined') {
         const target = event.target as HTMLElement
-        if (!target.closest('header')) {
+        if (mobileMenuOpen && !target.closest('header')) {
           setMobileMenuOpen(false)
+        }
+        if (userMenuOpen && !target.closest('.relative')) {
+          setUserMenuOpen(false)
         }
       }
     }
 
-    if (mobileMenuOpen) {
+    if (mobileMenuOpen || userMenuOpen) {
       document.addEventListener('mousedown', handleClickOutside)
       return () => {
         document.removeEventListener('mousedown', handleClickOutside)
       }
     }
-  }, [mobileMenuOpen])
+  }, [mobileMenuOpen, userMenuOpen])
 
   const navItems = [
     { href: '/dashboard', label: 'Dashboard' },
@@ -128,10 +144,37 @@ export default function Layout({ children }: LayoutProps) {
                 <Bell className="w-6 h-6" />
                 <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full"></span>
               </button>
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                  <User className="w-5 h-5 text-gray-600" />
-                </div>
+              <div className="relative">
+                <button
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100"
+                >
+                  <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                    <User className="w-5 h-5 text-gray-600" />
+                  </div>
+                </button>
+                
+                {userMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border border-gray-200">
+                    <div className="py-1">
+                      <a
+                        href="/impostazioni/profilo"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => setUserMenuOpen(false)}
+                      >
+                        <User className="w-4 h-4 inline mr-2" />
+                        Il Mio Profilo
+                      </a>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 flex items-center"
+                      >
+                        <LogOut className="w-4 h-4 mr-2" />
+                        Logout
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

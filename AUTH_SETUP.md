@@ -99,18 +99,50 @@ router.push('/auth/login')
 
 ## Gestione Utenti
 
-### Creare un Admin
+### Creare l'Utente Admin Iniziale
 
-Per creare il primo utente admin, puoi:
+Per creare l'utente admin predefinito:
 
-1. Registrarti normalmente
-2. Modificare manualmente il database:
+**Opzione 1: Via API (consigliato)**
+```bash
+# Assicurati che il server sia in esecuzione
+npm run dev
+
+# In un altro terminale, esegui:
+curl -X POST http://localhost:3000/api/users/create-admin
+```
+
+Oppure usa lo script:
+```bash
+bash scripts/create-admin.sh
+```
+
+**Credenziali Admin:**
+- Email: `admin@primanota.it`
+- Password: `!Buui8492`
+
+**Opzione 2: Manualmente**
+1. Registrati normalmente su `/auth/register`
+2. Modifica il database:
 
 ```sql
 UPDATE "User" SET role = 'admin' WHERE email = 'tuo@email.com';
 ```
 
-Oppure creare un endpoint API per promuovere utenti (solo per admin esistenti).
+### Gestione Utenti (Solo Admin)
+
+Gli amministratori possono:
+- Visualizzare tutti gli utenti su `/impostazioni/utenti`
+- Modificare nome e ruolo degli utenti
+- Eliminare utenti (tranne se stessi)
+- Promuovere utenti a admin
+
+### Gestione Profilo
+
+Tutti gli utenti possono:
+- Visualizzare e modificare il proprio profilo su `/impostazioni/profilo`
+- Cambiare la propria password
+- Visualizzare il proprio ruolo
 
 ## Sicurezza
 
