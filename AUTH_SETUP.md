@@ -20,8 +20,10 @@ Aggiungi queste variabili nel file `.env` locale e su Vercel:
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://exmpgaocttxqzpvpxsgy.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV4bXBnYW9jdHR4cXpwdnB4c2d5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyMzU1MDgsImV4cCI6MjA4ODgxMTUwOH0.1WTD9b512nPFLHE1bFveZpV-zvr6joWyo4y6dxY7uxY
 ```
+
+**✅ Configurato**: Le variabili sono già state aggiunte al file `.env` locale.
 
 **Come ottenere le chiavi:**
 
