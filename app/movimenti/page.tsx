@@ -163,16 +163,34 @@ export default function MovimentiPage() {
   const handleDeleteTransaction = async (id: string) => {
     if (!confirm('Sei sicuro di voler eliminare questo movimento?')) return
 
+    // Ottimisticamente rimuovi l'elemento dallo stato locale
+    const previousTransactions = transactions
+    const previousPage = currentPage
+    
+    // Calcola la nuova lista senza l'elemento eliminato
+    const updatedTransactions = transactions.filter((t) => t.id !== id)
+    setTransactions(updatedTransactions)
+
+    // Gestisci la paginazione: se siamo sull'ultima pagina e rimane vuota, vai alla pagina precedente
+    const newTotalPages = Math.ceil(updatedTransactions.length / itemsPerPage)
+    if (currentPage > newTotalPages && newTotalPages > 0) {
+      setCurrentPage(newTotalPages)
+    }
+
     try {
       const res = await fetch(`/api/transactions/${id}`, {
         method: 'DELETE',
       })
-      if (res.ok) {
-        fetchTransactions()
+      if (!res.ok) {
+        // Se l'eliminazione fallisce, ripristina lo stato precedente
+        setTransactions(previousTransactions)
+        setCurrentPage(previousPage)
+        throw new Error('Failed to delete transaction')
       }
     } catch (error) {
       console.error('Error deleting transaction:', error)
       alert('Errore nell\'eliminazione')
+      // Lo stato è già stato ripristinato sopra se necessario
     }
   }
 
