@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Layout from '@/components/Layout'
 import MetricCard from '@/components/MetricCard'
 import { TrendingUp, TrendingDown, Wallet } from 'lucide-react'
@@ -25,11 +25,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState<DashboardStats | null>(null)
 
-  useEffect(() => {
-    fetchDashboardStats()
-  }, [])
-
-  const fetchDashboardStats = async () => {
+  const fetchDashboardStats = useCallback(async () => {
     try {
       setLoading(true)
       const res = await fetch('/api/dashboard')
@@ -43,7 +39,11 @@ export default function DashboardPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    fetchDashboardStats()
+  }, [fetchDashboardStats])
 
   const formatCurrency = (amount: number) => {
     return `€ ${amount.toLocaleString('it-IT', {

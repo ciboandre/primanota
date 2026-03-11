@@ -29,15 +29,20 @@ export default function ExportPDF({ period, startDate, endDate }: ExportPDFProps
 
       const data = await res.json()
 
-      if (data.success) {
+      if (data.success && typeof window !== 'undefined') {
         // Crea una nuova finestra con l'HTML e stampa
-        const printWindow = window.open('', '_blank')
-        if (printWindow) {
-          printWindow.document.write(data.html)
-          printWindow.document.close()
-          printWindow.onload = () => {
-            printWindow.print()
+        try {
+          const printWindow = window.open('', '_blank')
+          if (printWindow) {
+            printWindow.document.write(data.html)
+            printWindow.document.close()
+            printWindow.onload = () => {
+              printWindow.print()
+            }
           }
+        } catch (error) {
+          console.error('Error opening print window:', error)
+          alert('Errore nell\'apertura della finestra di stampa')
         }
       } else {
         alert('Errore nella generazione del PDF')

@@ -46,7 +46,7 @@ export default function Layout({ children }: LayoutProps) {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
+                    if (e.key === 'Enter' && typeof window !== 'undefined') {
                       if (pathname === '/movimenti') {
                         // Passa la query alla pagina movimenti tramite sessionStorage
                         sessionStorage.setItem('searchQuery', searchQuery)

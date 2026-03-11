@@ -56,22 +56,28 @@ export default function MovimentiPage() {
     // Recupera la query di ricerca da sessionStorage
     const loadSearchQuery = () => {
       if (typeof window !== 'undefined') {
-        const storedQuery = sessionStorage.getItem('searchQuery')
-        if (storedQuery) {
-          setSearchQuery(storedQuery)
-          setAppliedFilters((prev: any) => ({ ...prev, search: storedQuery }))
-          sessionStorage.removeItem('searchQuery')
+        try {
+          const storedQuery = sessionStorage.getItem('searchQuery')
+          if (storedQuery) {
+            setSearchQuery(storedQuery)
+            setAppliedFilters((prev: any) => ({ ...prev, search: storedQuery }))
+            sessionStorage.removeItem('searchQuery')
+          }
+        } catch (error) {
+          console.error('Error accessing sessionStorage:', error)
         }
       }
     }
 
-    loadSearchQuery()
+    if (typeof window !== 'undefined') {
+      loadSearchQuery()
 
-    // Ascolta gli eventi di aggiornamento ricerca
-    window.addEventListener('searchUpdate', loadSearchQuery)
-    
-    return () => {
-      window.removeEventListener('searchUpdate', loadSearchQuery)
+      // Ascolta gli eventi di aggiornamento ricerca
+      window.addEventListener('searchUpdate', loadSearchQuery)
+      
+      return () => {
+        window.removeEventListener('searchUpdate', loadSearchQuery)
+      }
     }
   }, [])
 
