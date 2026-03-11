@@ -1,0 +1,13 @@
+# Copia questo valore nella variabile d'ambiente DATABASE_URL su Vercel
+
+postgresql://postgres.exmpgaocttxqzpvpxsgy:%21Buui849200@aws-1-eu-north-1.pooler.supabase.com:5432/postgres
+
+# Istruzioni:
+# 1. Vai su https://vercel.com/dashboard
+# 2. Seleziona il progetto primanota
+# 3. Settings → Environment Variables
+# 4. Aggiungi:
+#    - Key: DATABASE_URL
+#    - Value: (il valore sopra)
+#    - Environments: Production, Preview, Development
+# 5. Salva e fai un redeploy
