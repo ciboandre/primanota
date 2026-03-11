@@ -20,10 +20,14 @@ Aggiungi queste variabili nel file `.env` locale e su Vercel:
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://exmpgaocttxqzpvpxsgy.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV4bXBnYW9jdHR4cXpwdnB4c2d5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyMzU1MDgsImV4cCI6MjA4ODgxMTUwOH0.1WTD9b512nPFLHE1bFveZpV-zvr6joWyo4y6dxY7uxY
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
-**✅ Configurato**: Le variabili sono già state aggiunte al file `.env` locale.
+Per permettere agli **admin di creare nuovi utenti** con email e password dalla pagina Gestione utenti, aggiungi anche (solo in `.env.local`, mai nel client):
+
+```env
+SUPABASE_SERVICE_ROLE_KEY=la_tua_service_role_key
+```
 
 **Come ottenere le chiavi:**
 
@@ -31,6 +35,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzd
 2. Copia:
    - **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`
    - **anon public** key → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - **service_role** (secret) → `SUPABASE_SERVICE_ROLE_KEY` (solo lato server, non esporre al browser)
 
 ### 3. Applica le migrazioni del database
 
@@ -63,7 +68,8 @@ Per inviare email di conferma:
 ### API Endpoints
 
 - `GET /api/users` - Lista utenti (solo admin)
-- `POST /api/users` - Crea nuovo utente
+- `POST /api/users` - Crea record utente (uso interno)
+- `POST /api/users/create` - Crea nuovo utente con email, password, nome e ruolo (solo admin; richiede `SUPABASE_SERVICE_ROLE_KEY`)
 
 ### Middleware
 
@@ -133,6 +139,8 @@ UPDATE "User" SET role = 'admin' WHERE email = 'tuo@email.com';
 
 Gli amministratori possono:
 - Visualizzare tutti gli utenti su `/impostazioni/utenti`
+- **Aggiungere nuovi utenti** con tutte le credenziali (nome, email, password, ruolo) tramite il pulsante "Aggiungi utente"
+- **Memorizzare le credenziali**: le credenziali degli utenti appena creati vengono salvate in sessione (sessionStorage) e mostrate nella sezione "Credenziali memorizzate" per copiarle e consegnarle all'utente
 - Modificare nome e ruolo degli utenti
 - Eliminare utenti (tranne se stessi)
 - Promuovere utenti a admin
