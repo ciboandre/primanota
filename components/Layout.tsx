@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
-import { Search, Bell, User } from 'lucide-react'
+import { Search, Bell, User, Menu, X } from 'lucide-react'
 
 interface LayoutProps {
   children: React.ReactNode
@@ -13,6 +13,31 @@ export default function Layout({ children }: LayoutProps) {
   const pathname = usePathname()
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState('')
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  // Chiudi il menu mobile quando cambia la route
+  useEffect(() => {
+    setMobileMenuOpen(false)
+  }, [pathname])
+
+  // Chiudi il menu quando si clicca fuori (opzionale)
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (mobileMenuOpen && typeof window !== 'undefined') {
+        const target = event.target as HTMLElement
+        if (!target.closest('header')) {
+          setMobileMenuOpen(false)
+        }
+      }
+    }
+
+    if (mobileMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside)
+      }
+    }
+  }, [mobileMenuOpen])
 
   const navItems = [
     { href: '/dashboard', label: 'Dashboard' },
@@ -28,17 +53,33 @@ export default function Layout({ children }: LayoutProps) {
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            {/* Logo */}
+            {/* Logo e Mobile Menu Button */}
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-primary rounded flex items-center justify-center">
-                <span className="text-white font-bold text-lg">PN</span>
+              {/* Mobile Menu Button */}
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="md:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                aria-label="Toggle menu"
+              >
+                {mobileMenuOpen ? (
+                  <X className="w-6 h-6" />
+                ) : (
+                  <Menu className="w-6 h-6" />
+                )}
+              </button>
+              
+              {/* Logo */}
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-primary rounded flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">PN</span>
+                </div>
+                <span className="text-xl font-semibold text-gray-900 hidden sm:inline">Prima Nota</span>
               </div>
-              <span className="text-xl font-semibold text-gray-900">Prima Nota</span>
             </div>
 
-            {/* Search Bar */}
-            <div className="flex-1 max-w-md mx-8">
-              <div className="relative">
+            {/* Search Bar - Hidden on mobile, visible on tablet+ */}
+            <div className="hidden md:flex flex-1 max-w-md mx-8">
+              <div className="relative w-full">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <input
                   type="text"
@@ -48,11 +89,9 @@ export default function Layout({ children }: LayoutProps) {
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && typeof window !== 'undefined') {
                       if (pathname === '/movimenti') {
-                        // Passa la query alla pagina movimenti tramite sessionStorage
                         sessionStorage.setItem('searchQuery', searchQuery)
                         window.dispatchEvent(new Event('searchUpdate'))
                       } else {
-                        // Se non siamo nella pagina movimenti, vai lì con la query
                         sessionStorage.setItem('searchQuery', searchQuery)
                         router.push('/movimenti')
                       }
@@ -63,7 +102,7 @@ export default function Layout({ children }: LayoutProps) {
               </div>
             </div>
 
-            {/* Navigation */}
+            {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center space-x-1">
               {navItems.map((item) => {
                 const isActive = pathname === item.href
@@ -83,8 +122,8 @@ export default function Layout({ children }: LayoutProps) {
               })}
             </nav>
 
-            {/* User Section */}
-            <div className="flex items-center space-x-4">
+            {/* User Section - Hidden on mobile */}
+            <div className="hidden md:flex items-center space-x-4">
               <button className="relative p-2 text-gray-600 hover:text-gray-900">
                 <Bell className="w-6 h-6" />
                 <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full"></span>
@@ -96,11 +135,63 @@ export default function Layout({ children }: LayoutProps) {
               </div>
             </div>
           </div>
+
+          {/* Mobile Search Bar - Visible when menu is closed */}
+          {!mobileMenuOpen && (
+            <div className="md:hidden pb-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="text"
+                  placeholder="Cerca voci..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && typeof window !== 'undefined') {
+                      if (pathname === '/movimenti') {
+                        sessionStorage.setItem('searchQuery', searchQuery)
+                        window.dispatchEvent(new Event('searchUpdate'))
+                      } else {
+                        sessionStorage.setItem('searchQuery', searchQuery)
+                        router.push('/movimenti')
+                      }
+                    }
+                  }}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Mobile Menu */}
+          {mobileMenuOpen && (
+            <div className="md:hidden border-t border-gray-200">
+              <nav className="px-2 pt-2 pb-4 space-y-1">
+                {navItems.map((item) => {
+                  const isActive = pathname === item.href
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                        isActive
+                          ? 'bg-primary text-white'
+                          : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                      }`}
+                    >
+                      {item.label}
+                    </Link>
+                  )
+                })}
+              </nav>
+            </div>
+          )}
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         {children}
       </main>
     </div>
