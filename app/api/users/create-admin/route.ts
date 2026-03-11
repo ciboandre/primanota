@@ -23,13 +23,48 @@ export async function POST() {
     })
 
     if (authError) {
-      // Se l'utente esiste già, prova a fare login per ottenere l'ID
-      if (authError.message.includes('already registered')) {
-        const { data: loginData } = await supabase.auth.signInWithPassword({
+      // Se l'utente esiste già o c'è un rate limit, prova a fare login
+      if (
+        authError.message.includes('already registered') ||
+        authError.message.includes('rate limit') ||
+        authError.message.includes('Email rate limit')
+      ) {
+        const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
           email,
           password,
         })
         
+        if (loginError) {
+          // Se anche il login fallisce, verifica se esiste nel database
+          const existingUserByEmail = await prisma.user.findUnique({
+            where: { email },
+          })
+
+          if (existingUserByEmail) {
+            // Aggiorna a admin se non lo è già
+            if (existingUserByEmail.role !== 'admin') {
+              await prisma.user.update({
+                where: { id: existingUserByEmail.id },
+                data: { role: 'admin' },
+              })
+            }
+            return NextResponse.json({
+              message: 'Admin user already exists in database and has been updated',
+              user: existingUserByEmail,
+              note: 'User exists but Supabase Auth may have issues. You may need to login manually or reset password.',
+            })
+          }
+
+          return NextResponse.json(
+            { 
+              error: 'Could not create or login user',
+              details: loginError.message,
+              suggestion: 'Try creating the user manually via /auth/register or disable email confirmation in Supabase settings'
+            },
+            { status: 400 }
+          )
+        }
+
         if (loginData?.user) {
           // Verifica se esiste già nel database
           const existingUser = await prisma.user.findUnique({
@@ -64,7 +99,10 @@ export async function POST() {
       }
       
       return NextResponse.json(
-        { error: authError.message },
+        { 
+          error: authError.message,
+          suggestion: 'If this is a rate limit error, wait a few minutes or disable email confirmation in Supabase Dashboard → Authentication → Settings'
+        },
         { status: 400 }
       )
     }
