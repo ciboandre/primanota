@@ -8,18 +8,19 @@ Applicazione web per la gestione della prima nota e del conto economico.
 - 💰 **Movimenti** - Gestione e monitoraggio delle transazioni finanziarie
 - 📈 **Conto Economico** - Analisi dettagliata della performance finanziaria
 - 📋 **Bilancio** - Visualizzazione del bilancio patrimoniale (in sviluppo)
-- ⚙️ **Impostazioni** - Configurazione dell'applicazione (in sviluppo)
+- ⚙️ **Impostazioni** - Configurazione dell'applicazione
 
 ## Tecnologie Utilizzate
 
 - **Next.js 14** - Framework React per applicazioni web
 - **TypeScript** - Tipizzazione statica
 - **Prisma** - ORM per la gestione del database
-- **SQLite** - Database (facilmente migrabile a PostgreSQL)
+- **PostgreSQL** - Database (Supabase)
 - **Tailwind CSS** - Framework CSS utility-first
 - **Recharts** - Libreria per grafici
 - **Lucide React** - Icone moderne
 - **date-fns** - Gestione date
+- **Vercel Edge Config** - Configurazione edge
 
 ## Installazione
 
@@ -28,8 +29,14 @@ Applicazione web per la gestione della prima nota e del conto economico.
 npm install
 ```
 
-2. Configura il database:
+2. Configura il database PostgreSQL:
 ```bash
+# Crea il database (se non esiste)
+createdb primanota
+
+# Configura la variabile d'ambiente nel file .env
+# DATABASE_URL="postgresql://user:password@localhost:5432/primanota?schema=public"
+
 # Genera il client Prisma
 npm run prisma:generate
 
@@ -37,7 +44,16 @@ npm run prisma:generate
 npx prisma migrate dev --name init
 ```
 
-3. Popola il database con dati di esempio (opzionale):
+3. Configura Vercel Edge Config (opzionale):
+```bash
+# Pull delle variabili d'ambiente da Vercel
+vercel env pull
+
+# Installa il pacchetto (già incluso)
+npm install @vercel/edge-config
+```
+
+4. Popola il database con dati di esempio (opzionale):
 ```bash
 # Avvia il server prima
 npm run dev
@@ -46,12 +62,12 @@ npm run dev
 curl -X POST http://localhost:3000/api/seed
 ```
 
-4. Avvia il server di sviluppo:
+5. Avvia il server di sviluppo:
 ```bash
 npm run dev
 ```
 
-5. Apri [http://localhost:3000](http://localhost:3000) nel browser
+6. Apri [http://localhost:3000](http://localhost:3000) nel browser
 
 ## Database
 
@@ -87,6 +103,31 @@ npx prisma migrate dev --name init
 - `npm run prisma:studio` - Apre Prisma Studio per visualizzare/modificare i dati
 - `npx prisma migrate deploy` - Applica le migrazioni in produzione
 
+## Vercel Edge Config
+
+L'applicazione supporta Vercel Edge Config per configurazioni dinamiche.
+
+### Setup
+
+1. Crea un Edge Config Store su Vercel
+2. Aggiungi le variabili d'ambiente:
+   - `EDGE_CONFIG` - Token di accesso
+3. Pull delle variabili:
+```bash
+vercel env pull
+```
+
+### Utilizzo
+
+Il middleware è configurato per rispondere a `/welcome` con il valore di `greeting` da Edge Config.
+
+Esempio di utilizzo nel codice:
+```typescript
+import { getEdgeConfig } from '@/lib/edgeConfig'
+
+const greeting = await getEdgeConfig('greeting')
+```
+
 ## Struttura del Progetto
 
 ```
@@ -97,6 +138,8 @@ progetto/
 │   │   ├── categories/     # Gestione categorie
 │   │   ├── accounts/       # Gestione conti
 │   │   ├── stats/          # Statistiche finanziarie
+│   │   ├── dashboard/      # Statistiche dashboard
+│   │   ├── export/         # Esportazione dati
 │   │   └── seed/           # Popolamento database
 │   ├── dashboard/          # Dashboard principale
 │   ├── movimenti/          # Gestione movimenti
@@ -107,14 +150,18 @@ progetto/
 │   ├── Layout.tsx          # Layout principale con navigazione
 │   ├── MetricCard.tsx      # Card per metriche
 │   ├── ProgressBar.tsx     # Barra di progresso
-│   └── TransactionForm.tsx # Form per transazioni
+│   ├── TransactionForm.tsx # Form per transazioni
+│   ├── AdvancedFilters.tsx # Filtri avanzati
+│   └── ExportPDF.tsx       # Esportazione PDF
 ├── lib/                    # Utilities
 │   ├── prisma.ts           # Client Prisma
+│   ├── edgeConfig.ts       # Edge Config utilities
 │   ├── mockData.ts         # Dati di esempio (deprecato)
 │   └── utils.ts            # Funzioni di utilità
 ├── prisma/                 # Configurazione Prisma
 │   ├── schema.prisma       # Schema database
 │   └── migrations/         # Migrazioni database
+├── middleware.js           # Next.js middleware per Edge Config
 └── types/                  # Definizioni TypeScript
     └── index.ts            # Tipi e interfacce
 ```
@@ -134,6 +181,7 @@ progetto/
 ✅ **Gestione Movimenti**
 - Creazione, modifica ed eliminazione transazioni
 - Filtri per data, categoria e conto
+- Ricerca case-insensitive
 - Calcolo automatico di entrate/uscite
 - Aggiornamento automatico dei saldi dei conti
 
@@ -142,6 +190,12 @@ progetto/
 - Dettaglio ricavi e costi per categoria
 - Grafico dell'andamento degli ultimi 6 mesi
 - Filtri per periodo (Mensile, Trimestrale, Annuale)
+- Esportazione PDF
+
+✅ **Dashboard**
+- Statistiche in tempo reale dal database
+- Variazioni percentuali rispetto al mese precedente
+- Statistiche rapide (movimenti, categorie, conti, fatture)
 
 ✅ **Database**
 - Schema completo con relazioni
@@ -149,9 +203,16 @@ progetto/
 - API RESTful per tutte le operazioni
 - Popolamento iniziale con dati di esempio
 
+✅ **Esportazione**
+- Esportazione CSV dei movimenti
+- Esportazione PDF del conto economico
+- Rispetta i filtri applicati
+
+✅ **Ricerca e Filtri**
+- Ricerca globale nella barra header
+- Filtri avanzati (data, categoria, conto, stato, importo)
+- Ricerca case-insensitive con PostgreSQL
+
 ## Licenza
 
 © 2023 Prima Nota Accounting. Tutti i diritti riservati.
-# primanota
-# primanota
-# primanota
