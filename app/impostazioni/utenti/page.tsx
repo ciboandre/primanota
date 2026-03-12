@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Layout from '@/components/Layout'
 import { createClient } from '@/lib/supabase-client'
 import { useRouter } from 'next/navigation'
@@ -60,15 +60,7 @@ export default function UtentiPage() {
   const [storedCredentials, setStoredCredentials] = useState<StoredCredential[]>([])
   const [creating, setCreating] = useState(false)
 
-  useEffect(() => {
-    checkAuthAndLoadUsers()
-  }, [])
-
-  useEffect(() => {
-    setStoredCredentials(getStoredCredentials())
-  }, [isAddFormOpen])
-
-  const checkAuthAndLoadUsers = async () => {
+  const checkAuthAndLoadUsers = useCallback(async () => {
     try {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
@@ -100,7 +92,15 @@ export default function UtentiPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [router])
+
+  useEffect(() => {
+    checkAuthAndLoadUsers()
+  }, [checkAuthAndLoadUsers])
+
+  useEffect(() => {
+    setStoredCredentials(getStoredCredentials())
+  }, [isAddFormOpen])
 
   const handleEdit = (user: UserData) => {
     setSelectedUser(user)

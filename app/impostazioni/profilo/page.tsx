@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Layout from '@/components/Layout'
 import { createClient } from '@/lib/supabase-client'
 import { useRouter } from 'next/navigation'
@@ -25,11 +25,7 @@ export default function ProfiloPage() {
     confirmPassword: '',
   })
 
-  useEffect(() => {
-    loadUserProfile()
-  }, [])
-
-  const loadUserProfile = async () => {
+  const loadUserProfile = useCallback(async () => {
     try {
       const supabase = createClient()
       const { data: { user: authUser } } = await supabase.auth.getUser()
@@ -55,7 +51,11 @@ export default function ProfiloPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [router])
+
+  useEffect(() => {
+    loadUserProfile()
+  }, [loadUserProfile])
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault()
